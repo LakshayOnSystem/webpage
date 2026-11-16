@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inkwell – Read comics and manga</title>
+<meta name="description" content="Read public-domain, original and licensed comics and manga.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+<script>
+/* Sets theme before first paint (no flash). localStorage is guarded with try/catch. */
+(function () {
+  var t = null;
+  try { t = localStorage.getItem("theme"); } catch (e) {}
+  if (!t) t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
+<style>
+:root {
+  --bg: #130f24; --surface: #1d1838; --line: #3a3166;
+  --text: #f1eefc; --muted: #aaa4cc;
+  --accent: #ff4f87; --accent2: #35e0d2; --accent3: #ffd23f; --accent-ink: #1a0610;
+  --space-1: .25rem; --space-2: .5rem; --space-3: 1rem; --space-4: 1.5rem; --space-5: 2.75rem;
+  --radius: 4px;
+  --font-body: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Arial Black", "Helvetica Neue", Impact, sans-serif;
+}
+:root[data-theme="light"] {
+  --bg: #fbf8ff; --surface: #ffffff; --line: #cfc6ee;
+  --text: #1b1535; --muted: #5d5680;
+  --accent: #e0245e; --accent2: #0aa59a; --accent3: #e0a800; --accent-ink: #fff;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { color-scheme: dark light; }
+body {
+  margin: 0; background: var(--bg); color: var(--text); font: 1rem/1.5 var(--font-body);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 3px solid var(--accent3); outline-offset: 3px; }
+.skip { position: absolute; left: -999px; top: 0; background: var(--accent); color: var(--accent-ink); padding: .5rem 1rem; z-index: 20; }
+.skip:focus { left: .5rem; top: .5rem; }
+.wrap { max-width: 72rem; margin-inline: auto; padding-inline: var(--space-3); position: relative; }
+
+/* ---------- Header: ink bar with a slanted accent stripe ---------- */
+header { border-bottom: 3px solid var(--accent); background: var(--surface); position: relative; overflow: hidden; }
+header::after { content: ""; position: absolute; right: -2rem; top: 0; bottom: 0; width: 9rem; background: var(--accent); transform: skewX(-25deg); opacity: .18; }
+header .wrap { display: flex; align-items: center; gap: var(--space-3); min-height: 3.75rem; z-index: 1; }
+.logo { font: 900 1.6rem/1 var(--font-display); margin-right: auto; transform: skewX(-8deg); }
+.logo span { color: var(--accent); }
+nav { display: flex; gap: var(--space-3); font-weight: 700; }
+nav a { padding: .25rem .5rem; border-bottom: 3px solid transparent; }
+nav a:hover { border-color: var(--accent2); }
+.icon-btn { background: var(--bg); border: 2px solid var(--text); color: var(--text); border-radius: var(--radius); min-width: 2.5rem; min-height: 2.5rem; cursor: pointer; font: inherit; box-shadow: 3px 3px 0 var(--accent); }
+.icon-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--accent); }
+
+/* ---------- Hero: speed lines, burst, sound effect ---------- */
+.hero { position: relative; overflow: hidden; padding-block: 4rem 3.5rem; isolation: isolate; }
+.hero::before { /* radial speed lines */
+  content: ""; position: absolute; inset: -40%; z-index: -2;
+  background: repeating-conic-gradient(from 0deg at 70% 50%, var(--line) 0 2deg, transparent 2deg 7deg);
+  -webkit-mask: radial-gradient(circle at 70% 50%, transparent 14%, #000 60%);
+          mask: radial-gradient(circle at 70% 50%, transparent 14%, #000 60%);
+  opacity: .55;
+}
+.hero::after { /* halftone corner */
+  content: ""; position: absolute; left: 0; bottom: 0; width: 55%; height: 60%; z-index: -1;
+  background: radial-gradient(circle, var(--accent) 1.6px, transparent 2px) 0 0 / 11px 11px;
+  -webkit-mask: linear-gradient(20deg, #000, transparent 70%); mask: linear-gradient(20deg, #000, transparent 70%);
+  opacity: .35;
+}
+h1 { font: 900 clamp(2.2rem, 7vw, 4.2rem)/1.02 var(--font-display); margin: 0 0 var(--space-3); max-width: 14ch; transform: skewX(-6deg);
+     text-shadow: 4px 4px 0 var(--accent); letter-spacing: -.02em; }
+.intro { max-width: 46ch; margin: 0 0 var(--space-4); color: var(--muted); font-size: 1.05rem; }
+.cta { display: inline-block; background: var(--accent3); color: #1b1535; font-weight: 800; padding: .7rem 1.4rem; border: 3px solid #1b1535; box-shadow: 5px 5px 0 var(--accent2); transform: skewX(-8deg); }
+.cta:hover { transform: skewX(-8deg) translate(-2px,-2px); box-shadow: 7px 7px 0 var(--accent2); }
+.sfx { position: absolute; right: 6%; top: 12%; font: 900 clamp(4rem, 14vw, 9rem)/1 var(--font-display); color: transparent; -webkit-text-stroke: 3px var(--accent2); transform: rotate(-10deg); opacity: .8; pointer-events: none; user-select: none; }
+.spark { position: absolute; color: var(--accent3); font-size: 2rem; pointer-events: none; }
+.s1 { right: 38%; top: 14%; } .s2 { right: 12%; bottom: 14%; font-size: 3rem; color: var(--accent); } .s3 { left: 52%; bottom: 20%; font-size: 1.2rem; color: var(--accent2); }
+
+/* ---------- Section headings with slanted stripe ---------- */
+section { padding-top: var(--space-5); }
+h2 { font: 900 1.6rem/1.1 var(--font-display); margin: 0 0 var(--space-3); display: inline-block; padding: .2rem .9rem .2rem .3rem; border-left: 8px solid var(--accent); transform: skewX(-6deg); }
+
+/* ---------- Covers: CSS-drawn posters. Add <img> inside to override. ---------- */
+.cover { aspect-ratio: 2 / 3; position: relative; overflow: hidden; border: 3px solid var(--text); border-radius: var(--radius);
+  background: radial-gradient(circle at 1px 1px, rgb(255 255 255 / .22) 1.3px, transparent 1.7px) 0 0 / 8px 8px, linear-gradient(165deg, var(--c1), var(--c2));
+  box-shadow: 5px 5px 0 var(--sh, var(--accent)); }
+.cover::before { content: ""; position: absolute; inset: 0; }
+.cover::after { content: attr(data-title); position: absolute; left: .5rem; right: .5rem; bottom: .55rem; font: 900 1.05rem/1.05 var(--font-display); color: #fff;
+  text-shadow: 2px 2px 0 #000; transform: skewX(-8deg) rotate(-3deg); transform-origin: left bottom; }
+.cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
+.cover:has(img)::before, .cover:has(img)::after { display: none; }
+
+.art-lantern::before { background: radial-gradient(circle at 25% 30%, #ffd23f 0 5%, transparent 12%), radial-gradient(circle at 70% 22%, #ff9a3c 0 6%, transparent 14%), radial-gradient(circle at 48% 48%, #ff5c3c 0 7%, transparent 16%), linear-gradient(#0000 55%, #0b0720 55%); }
+.art-signal::before { background: conic-gradient(from 250deg at 22% 38%, transparent 0 8deg, rgb(255 255 200 / .75) 8deg 24deg, transparent 24deg), repeating-linear-gradient(8deg, transparent 0 14px, rgb(255 255 255 / .18) 14px 16px) 0 62% / 100% 38% no-repeat; }
+.art-orchard::before { background: repeating-conic-gradient(from 0deg at 50% 38%, rgb(255 210 63 / .55) 0 6deg, transparent 6deg 15deg), radial-gradient(circle at 50% 38%, #ffd23f 0 12%, transparent 13%); }
+.art-moon::before { background: radial-gradient(circle at 60% 32%, #fff6d8 0 17%, transparent 18%), radial-gradient(circle at 68% 28%, var(--c1) 0 15%, transparent 16%); }
+.art-mars::before { background: radial-gradient(circle at 50% 40%, #ff8a5c 0 22%, #9b2d2d 23% 25%, transparent 26%), radial-gradient(ellipse 48% 8% at 50% 40%, transparent 0 85%, rgb(255 255 255 / .8) 88% 100%); transform: rotate(-18deg); }
+.art-bell::before { background: linear-gradient(#e8d8a0, #b99a4a); clip-path: polygon(50% 12%, 62% 18%, 68% 40%, 80% 58%, 20% 58%, 32% 40%, 38% 18%); inset: 6% 12% 40% 12%; }
+
+/* ---------- Ranked row ---------- */
+.row { display: flex; gap: 1.75rem; margin: 0; padding: .75rem .5rem 1.5rem 1rem; list-style: none; overflow-x: auto; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
+.row > li { flex: 0 0 9.5rem; scroll-snap-align: start; position: relative; }
+.rank { position: absolute; left: -1rem; top: -.9rem; z-index: 3; font: 900 3.6rem/1 var(--font-display); color: var(--bg); -webkit-text-stroke: 2.5px var(--accent3); text-shadow: 3px 3px 0 #000; pointer-events: none; }
+.row a:hover .cover { transform: translate(-3px, -3px) rotate(-1deg); box-shadow: 8px 8px 0 var(--sh, var(--accent)); }
+.cover { transition: transform .15s, box-shadow .15s; }
+.row h3 { font-size: .95rem; margin: var(--space-3) 0 0; line-height: 1.25; }
+.row p { margin: 0; font-size: .8rem; color: var(--muted); }
+
+/* ---------- Recently added ---------- */
+.list { list-style: none; margin: 0; padding: 0; }
+.list a { display: grid; grid-template-columns: 5rem 1fr auto; gap: var(--space-3); align-items: center; padding: .85rem var(--space-2); border-bottom: 2px dashed var(--line); }
+.list a:hover { background: var(--surface); border-bottom-color: var(--accent); }
+.tag { justify-self: start; font-size: .75rem; font-weight: 800; padding: .15rem .6rem; background: var(--accent2); color: #08201e; transform: skewX(-10deg); }
+.tag.t-manhwa { background: var(--accent); color: #fff; }
+.tag.t-comic { background: var(--accent3); color: #1b1535; }
+.title { font-weight: 800; }
+.title small { display: block; color: var(--muted); font-weight: 400; font-size: .85rem; }
+time { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+
+footer { margin-top: var(--space-5); border-top: 3px solid var(--accent); padding-block: var(--space-4); color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 34rem) { .list a { grid-template-columns: 1fr auto; } .tag { grid-column: 1 / -1; } .sfx { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">Ink<span>well</span></a>
+    <nav aria-label="Main"><a href="/browse/">Browse</a><a href="/search/">Search</a></nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch to light theme">☀</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <div class="wrap">
+      <span class="sfx" aria-hidden="true">ドン!</span>
+      <span class="spark s1" aria-hidden="true">✦</span><span class="spark s2" aria-hidden="true">✦</span><span class="spark s3" aria-hidden="true">✦</span>
+      <h1>Read the next chapter now</h1>
+      <p class="intro">Original series, public-domain classics and licensed titles. No account needed. Your place is saved on this device.</p>
+      <a class="cta" href="/browse/">Start reading</a>
+    </div>
+  </div>
+
+  <section aria-labelledby="popular">
+    <div class="wrap">
+      <h2 id="popular">Most recent popular</h2>
+      <ol class="row">
+        <li><span class="rank" aria-hidden="true">1</span><a href="/series/ultimate-shut-in/"><div class="cover" style="--c1:#6a3df0;--c2:#14102a;--sh:#ff4f87"><img src="covers/ultimate-shut-in.webp" width="480" height="695" alt="Cover of The Ultimate Shut-In" ></div><h3>The Ultimate Shut-In</h3><p>Manhwa · Ongoing</p></a></li>
+        <li><span class="rank" aria-hidden="true">2</span><a href="/series/mercenary-enrollment/"><div class="cover" style="--c1:#8a8f7a;--c2:#14102a;--sh:#ffd23f"><img src="covers/mercenary-enrollment.webp" width="480" height="696" alt="Cover of Mercenary Enrollment" ></div><h3>Mercenary Enrollment</h3><p>Manhwa · Ongoing</p></a></li>
+        <li><span class="rank" aria-hidden="true">3</span><a href="/series/myst-might-mayhem/"><div class="cover" style="--c1:#0aa5a0;--c2:#14102a;--sh:#ff4f87"><img src="covers/myst-might-mayhem.webp" width="480" height="693" alt="Cover of Myst, Might, Mayhem" ></div><h3>Myst, Might, Mayhem</h3><p>Manhwa · Ongoing</p></a></li>
+        <li><span class="rank" aria-hidden="true">4</span><a href="/series/northern-blade/"><div class="cover" style="--c1:#7a4cf0;--c2:#14102a;--sh:#35e0d2"><img src="covers/northern-blade.webp" width="480" height="718" alt="Cover of Legend of the Northern Blade" loading="lazy" ></div><h3>Legend of the Northern Blade</h3><p>Manhwa · Ongoing</p></a></li>
+        <li><span class="rank" aria-hidden="true">5</span><a href="/series/estate-developer/"><div class="cover" style="--c1:#e5483a;--c2:#14102a;--sh:#ffd23f"><img src="covers/estate-developer.webp" width="480" height="696" alt="Cover of The Greatest Estate Developer" loading="lazy" ></div><h3>The Greatest Estate Developer</h3><p>Manhwa · Ongoing</p></a></li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="recent">
+    <div class="wrap">
+      <h2 id="recent">Recently added</h2>
+      <!-- Visible text is computed at BUILD time and goes stale; datetime holds the real date (Step 6). -->
+      <ul class="list">
+        <li><a href="/read/ultimate-shut-in/1/"><span class="tag t-manhwa">Manhwa</span><span class="title">The Ultimate Shut-In<small>Chapter 88: Tower Defense</small></span><time datetime="2026-11-15">1 day ago</time></a></li>
+        <li><a href="/read/northern-blade/1/"><span class="tag t-manhwa">Manhwa</span><span class="title">Legend of the Northern Blade<small>Chapter 120: Frozen Edge</small></span><time datetime="2026-11-14">2 days ago</time></a></li>
+        <li><a href="/read/estate-developer/1/"><span class="tag t-manhwa">Manhwa</span><span class="title">The Greatest Estate Developer<small>Chapter 142: Groundbreaking</small></span><time datetime="2026-11-11">5 days ago</time></a></li>
+        <li><a href="/read/mercenary-enrollment/1/"><span class="tag t-manhwa">Manhwa</span><span class="title">Mercenary Enrollment<small>Chapter 191: Contract Terms</small></span><time datetime="2026-11-08">8 days ago</time></a></li>
+        <li><a href="/read/myst-might-mayhem/1/"><span class="tag t-manhwa">Manhwa</span><span class="title">Myst, Might, Mayhem<small>Chapter 163: The Golden Serpent</small></span><time datetime="2026-11-02">2 weeks ago</time></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">Local preview build. Replace placeholder covers with content you have rights to before publishing.</div></footer>
+
+<script>
+/* Theme toggle: the page's only JavaScript. */
+(function () {
+  var btn = document.getElementById("theme"), root = document.documentElement;
+  function sync() {
+    var light = root.getAttribute("data-theme") === "light";
+    btn.textContent = light ? "☾" : "☀";
+    btn.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+  }
+  btn.addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>
